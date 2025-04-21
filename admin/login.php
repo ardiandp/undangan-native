@@ -8,14 +8,13 @@ if (isset($_SESSION['admin_logged_in'])) {
     exit();
 }
 
-// Proses login
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'] ?? '';
     $password = $_POST['password'] ?? '';
+    $remember = isset($_POST['remember']);
     
-    // Query untuk mencari admin (gunakan prepared statement)
-    $stmt = $conn->prepare("SELECT id, username, password FROM admin WHERE username = ?");
+    $stmt = $conn->prepare("SELECT * FROM admin WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -23,12 +22,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($result->num_rows === 1) {
         $admin = $result->fetch_assoc();
         
-        // Verifikasi password (password disimpan dalam bentuk hash)
         if (password_verify($password, $admin['password'])) {
             // Set session
             $_SESSION['admin_logged_in'] = true;
             $_SESSION['admin_id'] = $admin['id'];
             $_SESSION['admin_username'] = $admin['username'];
+            $_SESSION['admin_level'] = $admin['level'];
+            
+            // Update last login
+            $conn->query("UPDATE admin SET terakhir_login = NOW() WHERE id = {$admin['id']}");
             
             // Redirect ke dashboard
             header("Location: dashboard.php");
@@ -42,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Generate CSRF token
 $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -52,28 +53,11 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            background-color: #f8f9fa;
-            height: 100vh;
-            display: flex;
-            align-items: center;
-        }
-        .login-container {
-            max-width: 400px;
-            width: 100%;
-            padding: 30px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
-        }
-        .login-logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .login-logo i {
-            font-size: 50px;
-            color: #6c757d;
-        }
+        body { background-color: #f8f9fa; height: 100vh; display: flex; align-items: center; }
+        .login-container { max-width: 400px; width: 100%; padding: 30px; background: #fff; 
+                          border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .login-logo { text-align: center; margin-bottom: 30px; }
+        .login-logo i { font-size: 50px; color: #6c757d; }
     </style>
 </head>
 <body>
@@ -99,6 +83,11 @@ $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
                     <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                    <label class="form-check-label" for="remember">Ingat saya</label>
                 </div>
                 
                 <button type="submit" class="btn btn-primary w-100">

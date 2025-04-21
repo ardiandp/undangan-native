@@ -30,3 +30,15 @@
     ├── proses_konfirmasi.php
     ├── proses_ucapan.php
     └── view.php
+
+
+Cara Menggunakan:
+Jalankan query pembuatan tabel terlebih dahulu
+
+Kemudian jalankan query insert data dummy
+
+Untuk login, gunakan:
+
+Username: superadmin, admin1, atau admin2
+
+Password: password123
