@@ -2,8 +2,8 @@
     <div class="position-sticky pt-3">
         <div class="text-center mb-4">
             <img src="../assets/images/admin/default-profile.jpg" class="rounded-circle mb-2" width="80" height="80">
-            <h6 class="text-white mb-1"><?= htmlspecialchars($current_admin['nama_lengkap']) ?></h6>
-            <small class="text-muted"><?= ucfirst($current_admin['level']) ?></small>
+            <h6 class="text-white mb-1"><?= isset($current_admin['nama_lengkap']) ? htmlspecialchars($current_admin['nama_lengkap'], ENT_QUOTES, 'UTF-8') : 'Admin' ?></h6>
+            <small class="text-muted"><?= isset($current_admin['level']) ? ucfirst($current_admin['level']) : 'User' ?></small>
         </div>
         
         <ul class="nav flex-column">
